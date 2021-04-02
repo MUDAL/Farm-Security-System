@@ -15,7 +15,7 @@ void PIR_Init(void)
 	/*EXTI interrupt enable*/
 }
 
-bool PIR_Motion_Deteted(void)
+bool PIR_Motion_Detected(void)
 {
 	return EXTI_Get_Edge_Detected(EXTI_LINE0);
 }
