@@ -5,6 +5,7 @@
 #include "system.h"
 #include "hc06.h"
 #include "PIR.h"
+#include "speaker.h"
 
 /*
 Apparently, the module isn't an HC06 but an
@@ -49,32 +50,40 @@ int main(void)
 	PIR_Init();
 	HC06_Tx_Init();
 	HC06_Rx_Init(hc06ReceiveBuffer);
+	Speaker_Init(SPEAKER_FREQ_6KHZ, SPEAKER_DUTY_CYCLE_65PERCENT);
 	
 	while(1)
 	{
 		
-		if(HC06_Rx_Done_Receiving())
-		{
-			if(!strcmp(hc06ReceiveBuffer,"Baby"))
-			{
-				HC06_Transmit("Maybe I'm in love\n");
-			}
-			else if (!strcmp(hc06ReceiveBuffer,"TEL class"))
-			{
-				HC06_Transmit("It's not worth it\n");
-			}
-			else
-			{
-				HC06_Transmit("Do not break the bro code by simping\n");
-			}
-		}
+		//Test code for speaker
 		
+//		Speaker_Control(SPEAKER_ON);
+//		System_Timer_DelayMs(3000);
+//		Speaker_Control(SPEAKER_OFF);
+//		System_Timer_DelayMs(3000);
+		
+//		if(HC06_Rx_Done_Receiving())
+//		{
+//			if(!strcmp(hc06ReceiveBuffer,"Baby"))
+//			{
+//				HC06_Transmit("Maybe I'm in love\n");
+//			}
+//			else if (!strcmp(hc06ReceiveBuffer,"TEL class"))
+//			{
+//				HC06_Transmit("It's not worth it\n");
+//			}
+//			else
+//			{
+//				HC06_Transmit("Do not break the bro code by simping\n");
+//			}
+//		}
+//		
 //		if (PIR_Motion_Detected())
 //		{
 //			PIR_Restart();
 //			/*Add code to send bluetooth message to raspberry pi*/
 //		}
-//		
+		
 	}
 	
 }

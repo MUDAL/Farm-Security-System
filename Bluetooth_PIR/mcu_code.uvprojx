@@ -423,6 +423,16 @@
               <FileType>5</FileType>
               <FilePath>.\PIR.h</FilePath>
             </File>
+            <File>
+              <FileName>speaker.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\speaker.c</FilePath>
+            </File>
+            <File>
+              <FileName>speaker.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\speaker.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -497,6 +507,16 @@
               <FileName>uart.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\uart.h</FilePath>
+            </File>
+            <File>
+              <FileName>gptm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\gptm.c</FilePath>
+            </File>
+            <File>
+              <FileName>gptm.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\gptm.h</FilePath>
             </File>
           </Files>
         </Group>
