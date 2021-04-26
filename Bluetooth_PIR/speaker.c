@@ -16,14 +16,14 @@ void Speaker_Init(uint16_t freq, uint8_t dutyCycle)
 	//GPIO configuration
 	GPIO_Output_Init(GPIOA,
 									 GPIO_PORT_REG_LOW,
-									 GPIO_PIN0_OUTPUT_MODE_2MHZ,
-									 GPIO_PIN0_ALT_FUNC_PUSH_PULL);
+									 GPIO_PIN6_OUTPUT_MODE_2MHZ,
+									 GPIO_PIN6_ALT_FUNC_PUSH_PULL);
 	
 	//PWM configuration
 	const uint16_t timerRegLoadVal = lroundf((float)GPTM_CLK_IN_8MHZ / (GPTM_TIM_PRESCALE_80 * freq));
 	const uint16_t duty = lroundf((float)dutyCycle * timerRegLoadVal / 100);
 	
-	GPTM_PWM_Init(TIM2,
+	GPTM_PWM_Init(TIM3,
 								GPTM_TIM_PRESCALE_80,
 								timerRegLoadVal,
 								duty); 
@@ -32,7 +32,7 @@ void Speaker_Init(uint16_t freq, uint8_t dutyCycle)
 
 void Speaker_Control(bool speakerState)
 {
-	GPTM_Control(TIM2, speakerState);
+	GPTM_Control(TIM3, speakerState);
 }
 
 

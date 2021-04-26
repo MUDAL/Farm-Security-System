@@ -433,6 +433,16 @@
               <FileType>5</FileType>
               <FilePath>.\speaker.h</FilePath>
             </File>
+            <File>
+              <FileName>sim800l.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\sim800l.c</FilePath>
+            </File>
+            <File>
+              <FileName>sim800l.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\sim800l.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
