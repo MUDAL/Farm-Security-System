@@ -24,10 +24,8 @@ int main(void)
 	PIR_Init();
 	HC06_Tx_Init();
 	HC06_Rx_Init(hc06ReceiveBuffer);
-	Speaker_Init(SPEAKER_FREQ_6KHZ, SPEAKER_DUTY_CYCLE_65PERCENT);
+	Speaker_Init(SPEAKER_FREQ_1KHZ, SPEAKER_DUTY_CYCLE_65PERCENT);
 	SIM800L_Tx_Init();
-	SIM800L_Transmit_String("AT+CMGF=1\r\n");
-	System_Timer_DelayMs(50);
 	
 	while(1)
 	{
@@ -67,31 +65,39 @@ int main(void)
 
 bool SendSMS(char* msg)
 {
-	static uint8_t currentState = STATE_SEND_PHONE_NO;
-	const uint8_t ctrlZ = 26; 
+	static uint8_t currentState = STATE_SEND_SMS_AT_CMD;
+	const char cmdLineTerminator = 0x1A; 
 	bool doneSendingSMS = false;
 	
 	switch (currentState)
 	{
+		case STATE_SEND_SMS_AT_CMD:
+			SIM800L_Transmit_String("AT+CMGF=1\r\n");
+			currentState = STATE_SEND_PHONE_NO;
+			break;
+		
 		case STATE_SEND_PHONE_NO:
-			SIM800L_Transmit_String("AT+CMGS=\"+2348167351641\"\r\n");
-			currentState = STATE_SEND_MESSAGE;
+			if (System_Alarm_Ready(&sim800lTimer))
+			{
+				SIM800L_Transmit_String("AT+CMGS=\"+2348167351641\"\r\n");
+				currentState = STATE_SEND_MESSAGE;
+			}
 			break;
 		
 		case STATE_SEND_MESSAGE:
 			if (System_Alarm_Ready(&sim800lTimer))
 			{
 				SIM800L_Transmit_String(msg);
-				currentState = STATE_SEND_CTRL_Z;
+				currentState = STATE_TERMINATE_CMD_LINE;
 			}
 			break;
 			
-		case STATE_SEND_CTRL_Z:
+		case STATE_TERMINATE_CMD_LINE:
 			if (System_Alarm_Ready(&sim800lTimer))
 			{
-				SIM800L_Transmit_Byte(ctrlZ);
-				currentState = STATE_SEND_PHONE_NO;
-				doneSendingSMS = true;
+				SIM800L_Transmit_Byte(cmdLineTerminator);
+				currentState = STATE_SEND_SMS_AT_CMD;
+				doneSendingSMS = true; //reset PIR when this is read by software
 			}
 			break;
 	}
