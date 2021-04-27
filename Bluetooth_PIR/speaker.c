@@ -5,19 +5,26 @@
 #include "gptm.h"
 #include "speaker.h"
 
-void Speaker_Init(uint16_t freq, uint8_t dutyCycle)
+#define	SPEAKER_ON  							true
+#define	SPEAKER_OFF  							false
+
+void Speaker_Init(void)
 {
-	
-	if ((freq < SPEAKER_FREQ_1KHZ) || (freq > SPEAKER_FREQ_15KHZ))
-	{
-		return;
-	}
-	
+		
 	//GPIO configuration
 	GPIO_Output_Init(GPIOA,
 									 GPIO_PORT_REG_LOW,
 									 GPIO_PIN6_OUTPUT_MODE_2MHZ,
 									 GPIO_PIN6_ALT_FUNC_PUSH_PULL);
+}
+
+void Speaker_Activate(uint16_t freq, uint8_t dutyCycle)
+{
+	
+	if ((freq < SPEAKER_FREQ_800HZ) || (freq > SPEAKER_FREQ_30KHZ))
+	{
+		return;
+	}
 	
 	//PWM configuration
 	const uint16_t timerRegLoadVal = lroundf((float)GPTM_CLK_IN_8MHZ / (GPTM_TIM_PRESCALE_80 * freq));
@@ -28,11 +35,11 @@ void Speaker_Init(uint16_t freq, uint8_t dutyCycle)
 								timerRegLoadVal,
 								duty); 
 	
+	GPTM_Control(TIM3, SPEAKER_ON);
 }
 
-void Speaker_Control(bool speakerState)
+void Speaker_Deactivate(void)
 {
-	GPTM_Control(TIM3, speakerState);
+	GPTM_Control(TIM3, SPEAKER_OFF);
 }
-
 

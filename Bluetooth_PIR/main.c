@@ -18,24 +18,24 @@ int main(void)
 {
 	
 	static char hc06ReceiveBuffer[HC06_RX_BUFFER_SIZE];
-	
+
 	System_Init();
 	System_Alarm_Init(&sim800lTimer,50);
 	PIR_Init();
 	HC06_Tx_Init();
 	HC06_Rx_Init(hc06ReceiveBuffer);
-	Speaker_Init(SPEAKER_FREQ_1KHZ, SPEAKER_DUTY_CYCLE_65PERCENT);
+	Speaker_Init();
+	
 	SIM800L_Tx_Init();
 	
 	while(1)
 	{
 		
 		//Test code for speaker
-		
-//		Speaker_Control(SPEAKER_ON);
-//		System_Timer_DelayMs(3000);
-//		Speaker_Control(SPEAKER_OFF);
-//		System_Timer_DelayMs(3000);
+//		Speaker_Activate(SPEAKER_FREQ_800HZ, SPEAKER_DUTY_CYCLE_65PERCENT);
+//		System_Timer_DelayMs(5000);
+//		Speaker_Deactivate();
+//		System_Timer_DelayMs(5000);
 		
 //		if(HC06_Rx_Done_Receiving())
 //		{
@@ -53,11 +53,11 @@ int main(void)
 //			}
 //		}
 //		
-//		if (PIR_Motion_Detected())
-//		{
-//			PIR_Restart();
-//			/*Add code to send bluetooth message to raspberry pi*/
-//		}
+		if (PIR_Motion_Detected())
+		{
+			PIR_Restart();
+			/*Add code to send bluetooth message to raspberry pi*/
+		}
 		
 	}
 	
