@@ -13,11 +13,14 @@ static sysTimer_t sim800lTimer;
 
 //private functions
 static bool SendSMS(char* msg);
+//test function
+static void SendSMSBlocking(char* msg);
 
 int main(void)
 {
 	
 	static char hc06ReceiveBuffer[HC06_RX_BUFFER_SIZE];
+	bool smsReady = false;
 
 	System_Init();
 	System_Alarm_Init(&sim800lTimer,50);
@@ -27,9 +30,29 @@ int main(void)
 	Speaker_Init();
 	
 	SIM800L_Tx_Init();
+
+	/*
+	Uncomment this and comment the non-blocking code in order
+	to test the blocking SMS transmit
+	*/
+	
+	//SendSMSBlocking("Silence wench");
 	
 	while(1)
 	{
+		
+		/*
+		Uncomment this and comment the blocking code in order
+		to test the non-blocking SMS transmit
+		*/
+		if (!smsReady)
+		{
+			bool doneSendingSMS = SendSMS("Good day everyone");
+			if (doneSendingSMS)
+			{
+				smsReady = true;
+			}
+		}
 		
 		//Test code for speaker
 //		Speaker_Activate(SPEAKER_FREQ_800HZ, SPEAKER_DUTY_CYCLE_65PERCENT);
@@ -53,11 +76,11 @@ int main(void)
 //			}
 //		}
 //		
-		if (PIR_Motion_Detected())
-		{
-			PIR_Restart();
-			/*Add code to send bluetooth message to raspberry pi*/
-		}
+//		if (PIR_Motion_Detected())
+//		{
+//			PIR_Restart();
+//			/*Add code to send bluetooth message to raspberry pi*/
+//		}
 		
 	}
 	
@@ -104,4 +127,16 @@ bool SendSMS(char* msg)
 	
 	return doneSendingSMS;
 	
+}
+
+void SendSMSBlocking(char* msg)
+{
+	SIM800L_Transmit_String("AT+CMGF=1\r\n");
+	System_Timer_DelayMs(50);
+	SIM800L_Transmit_String("AT+CMGS=\"+2348167351641\"\r\n");
+	System_Timer_DelayMs(50);
+	SIM800L_Transmit_String(msg);
+	System_Timer_DelayMs(50);
+	SIM800L_Transmit_Byte(26); //CTRL-Z
+	System_Timer_DelayMs(50);
 }
