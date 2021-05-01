@@ -86,12 +86,12 @@ bool SendSMS(char* phoneNumber, char* message)
 	2.) false: if SMS hasn't been sent
 	*/
 	static char smsATCmd[27] = "AT+CMGS=\"";
-	static uint8_t currentState = STATE_SEND_SMS_AT_CMD;
+	static uint8_t currentState = STATE_SEND_INIT_AT_CMD;
 	bool doneSendingSMS = false;
 	
 	switch (currentState)
 	{
-		case STATE_SEND_SMS_AT_CMD:
+		case STATE_SEND_INIT_AT_CMD:
 			SIM800L_Transmit_String("AT+CMGF=1\r\n");
 			currentState = STATE_SEND_PHONE_NO;
 			break;
@@ -118,7 +118,7 @@ bool SendSMS(char* phoneNumber, char* message)
 			if (System_Alarm_Ready(&sim800lTimer))
 			{
 				SIM800L_Transmit_Byte(0x1A); //send CTRL+Z to terminate command line
-				currentState = STATE_SEND_SMS_AT_CMD;
+				currentState = STATE_SEND_INIT_AT_CMD;
 				doneSendingSMS = true; 
 			}
 			break;
