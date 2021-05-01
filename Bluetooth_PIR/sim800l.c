@@ -15,7 +15,7 @@ void SIM800L_Tx_Init(void)
 	//USART3 configuration
 	USART_Init(USART3,
 						 BAUD_9600,
-						 USART_DMA_RX_ENABLE,
+						 USART_TX_DMA_DISABLE,
 						 USART_TX_ENABLE);
 }
 
