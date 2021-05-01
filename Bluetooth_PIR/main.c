@@ -20,7 +20,7 @@ int main(void)
 {
 	
 	static char hc06ReceiveBuffer[HC06_RX_BUFFER_SIZE];
-	bool smsReady = false;
+	bool smsSent = false;
 
 	System_Init();
 	System_Alarm_Init(&sim800lTimer,50);
@@ -45,12 +45,12 @@ int main(void)
 		Uncomment this and comment the blocking code in order
 		to test the non-blocking SMS transmit
 		*/
-		if (!smsReady)
+		if (!smsSent)
 		{
 			bool doneSendingSMS = SendSMS("Good day everyone");
 			if (doneSendingSMS)
 			{
-				smsReady = true;
+				smsSent = true;
 			}
 		}
 		
