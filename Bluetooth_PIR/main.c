@@ -12,9 +12,7 @@
 static sysTimer_t sim800lTimer;
 
 //private functions
-static bool SendSMS(char* msg);
-//test function
-static void SendSMSBlocking(char* msg);
+static bool SendSMS(char* phoneNumber, char* message);
 
 int main(void)
 {
@@ -31,27 +29,13 @@ int main(void)
 	
 	SIM800L_Tx_Init();
 
-	/*
-	Uncomment this and comment the non-blocking code in order
-	to test the blocking SMS transmit
-	*/
-	
-	//SendSMSBlocking("Silence wench");
 	
 	while(1)
 	{
 		
-		/*
-		Uncomment this and comment the blocking code in order
-		to test the non-blocking SMS transmit
-		*/
 		if (!smsSent)
 		{
-			bool doneSendingSMS = SendSMS("Good day everyone");
-			if (doneSendingSMS)
-			{
-				smsSent = true;
-			}
+			smsSent = SendSMS("+2348144086708","Go home");
 		}
 		
 		//Test code for speaker
@@ -86,10 +70,23 @@ int main(void)
 	
 }
 
-bool SendSMS(char* msg)
+bool SendSMS(char* phoneNumber, char* message)
 {
+	/*
+	Description:
+	Sends SMS to a number and indicates whether the..
+	SMS was successfully sent or not.
+	
+	Parameters:
+	1.) phoneNumber: phone number to send SMS to
+	2.) message: SMS to send 
+	
+	Return:
+	1.) true: if SMS has been successfully sent
+	2.) false: if SMS hasn't been sent
+	*/
+	static char smsATCmd[27] = "AT+CMGS=\"";
 	static uint8_t currentState = STATE_SEND_SMS_AT_CMD;
-	const char cmdLineTerminator = 0x1A; 
 	bool doneSendingSMS = false;
 	
 	switch (currentState)
@@ -102,7 +99,9 @@ bool SendSMS(char* msg)
 		case STATE_SEND_PHONE_NO:
 			if (System_Alarm_Ready(&sim800lTimer))
 			{
-				SIM800L_Transmit_String("AT+CMGS=\"+2348167351641\"\r\n");
+				strcat(smsATCmd, phoneNumber);
+				strcat(smsATCmd, "\"\r\n");
+				SIM800L_Transmit_String(smsATCmd);
 				currentState = STATE_SEND_MESSAGE;
 			}
 			break;
@@ -110,7 +109,7 @@ bool SendSMS(char* msg)
 		case STATE_SEND_MESSAGE:
 			if (System_Alarm_Ready(&sim800lTimer))
 			{
-				SIM800L_Transmit_String(msg);
+				SIM800L_Transmit_String(message);
 				currentState = STATE_TERMINATE_CMD_LINE;
 			}
 			break;
@@ -118,25 +117,14 @@ bool SendSMS(char* msg)
 		case STATE_TERMINATE_CMD_LINE:
 			if (System_Alarm_Ready(&sim800lTimer))
 			{
-				SIM800L_Transmit_Byte(cmdLineTerminator);
+				SIM800L_Transmit_Byte(0x1A); //send CTRL+Z to terminate command line
 				currentState = STATE_SEND_SMS_AT_CMD;
-				doneSendingSMS = true; //reset PIR when this is read by software
+				doneSendingSMS = true; 
 			}
 			break;
 	}
 	
 	return doneSendingSMS;
+}
 	
-}
 
-void SendSMSBlocking(char* msg)
-{
-	SIM800L_Transmit_String("AT+CMGF=1\r\n");
-	System_Timer_DelayMs(50);
-	SIM800L_Transmit_String("AT+CMGS=\"+2348167351641\"\r\n");
-	System_Timer_DelayMs(50);
-	SIM800L_Transmit_String(msg);
-	System_Timer_DelayMs(50);
-	SIM800L_Transmit_Byte(26); //CTRL-Z
-	System_Timer_DelayMs(50);
-}
