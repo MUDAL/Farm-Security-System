@@ -24,7 +24,7 @@ void Clocks_Init(void)
 	RCC->AHBENR |= RCC_AHBENR_DMA1EN;
 	//enable clock access for TIM3 and USART3
 	RCC->APB1ENR |= RCC_APB1ENR_TIM3EN | RCC_APB1ENR_USART3EN;
-	//enable clock access for GPIOA, USART1, AFIO
+	//enable clock access for GPIOA, GPIOB, USART1, AFIO
 	RCC->APB2ENR |= (RCC_APB2ENR_IOPAEN 	| 
 									 RCC_APB2ENR_IOPBEN		|
 									 RCC_APB2ENR_USART1EN | 
