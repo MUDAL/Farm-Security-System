@@ -53,7 +53,7 @@ void HC06_Rx_Init(char* hc06RxBuffer)
 						 USART_DMA_RX_ENABLE,
 						 USART_RX_ENABLE);
 	
-	#if HC12_USE_INTERRUPTS
+	#if HC06_USE_INTERRUPTS
 	//DMA1 channel 5 configuration for USART1 Rx
 	DMA_USART_Rx_Init(DMA1_Channel5,
 									  USART1,
