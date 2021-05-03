@@ -28,6 +28,22 @@ int main(void)
 	HC06_Rx_Init(hc06ReceiveBuffer);
 	Speaker_Init();
 	SIM800L_Tx_Init();
+	
+	//HC06_Transmit("AT+ROLE?\r\n");
+	//System_Timer_DelayMs(50);
+//	HC06_Transmit("AT+IAC?\r\n");
+//	System_Timer_DelayMs(50);
+	//HC06_Transmit("AT+PAIR=c010,1,09f087,5\r\n");
+	//System_Timer_DelayMs(50);
+	//HC06_Transmit("AT+LINK=c010,b1,09f087\r\n");
+	//System_Timer_DelayMs(50);
+	
+//	HC06_Transmit("AT\r\n");
+//	System_Timer_DelayMs(50);
+//	HC06_Transmit("AT+CMODE=0\r\n");
+//	System_Timer_DelayMs(50);
+//	HC06_Transmit("AT+BIND=c010,b1,09f087\r\n");
+//	System_Timer_DelayMs(50);
 
 	while(1)
 	{
@@ -54,7 +70,7 @@ int main(void)
 //				HC06_Transmit("Do not break the bro code by simping\n");
 //			}
 //		}
-//		
+		
 		if (PIR_Motion_Detected())
 		{
 			if (!motionPrevDetected)
