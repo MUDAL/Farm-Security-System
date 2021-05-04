@@ -14,6 +14,9 @@
 #define SMS_SENT						true
 #define TIME_50_MS					50
 #define TIME_20_SEC					20000
+#define RPI_NO_DETECTION		'0'
+#define RPI_PERSON_DETECTED	'1'
+#define RPI_ANIMAL_DETECTED	'2'
 
 //private global variables
 static sysTimer_t sim800lTimer;
@@ -24,8 +27,8 @@ static bool SendSMS(char* phoneNumber, char* message);
 int main(void)
 {
 	//local variables
-	static char raspberryPiData;
 	static sysTimer_t audibleSpeakerTimer;
+	char raspberryPiData = RPI_NO_DETECTION;
 	bool smsStatus = SMS_NOT_SENT;
 	bool audibleSpeakerActivated = false;
 
@@ -55,17 +58,21 @@ int main(void)
 			//Checking for data from raspberry pi via bluetooth
 			switch (raspberryPiData)
 			{
-				case '1':
+				case RPI_NO_DETECTION:
+					HC06_Rx_Restart(); //Reset HC06 module state
+					break;
+				
+				case RPI_PERSON_DETECTED:
 					smsStatus = SendSMS(PHONE_NUMBER,"Person detected");
 					if (smsStatus == SMS_SENT)
 					{
 						Speaker_Activate(SPEAKER_FREQ_800HZ,SPEAKER_DUTY_CYCLE_65PERCENT);
 						audibleSpeakerActivated = true;
-						HC06_Rx_Restart(); //Reset HC06 module state
+						HC06_Rx_Restart(); 
 					}
 					break;
 				
-				case '2':
+				case RPI_ANIMAL_DETECTED:
 					smsStatus = SendSMS(PHONE_NUMBER,"Animal detected");
 					if (smsStatus == SMS_SENT)
 					{
