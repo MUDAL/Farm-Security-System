@@ -20,6 +20,7 @@ void System_Init(void)
 	Clocks_Init();
 	SysTick_Init();
 	GPIO_Reset(GPIOA);
+	GPIO_Reset(GPIOB);
 }
 
 void System_Timer_DelayMs(uint32_t delayTime)
