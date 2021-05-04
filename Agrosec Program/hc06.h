@@ -1,8 +1,8 @@
 #ifndef _HC06_H
 #define _HC06_H
 
-#define HC06_RX_BUFFER_SIZE				100
-#define HC06_USE_INTERRUPTS				0
+#define HC06_RX_BUFFER_SIZE				1
+#define HC06_USE_INTERRUPTS				1
 
 extern void HC06_Tx_Init(void);
 extern void HC06_Rx_Init(char* hc06RxBuffer);

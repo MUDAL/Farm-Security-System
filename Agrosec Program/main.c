@@ -8,6 +8,13 @@
 #include "sim800l.h"
 #include "speaker.h"
 
+//private defines
+#define PHONE_NUMBER				"+2348144086708"
+#define SMS_NOT_SENT				false
+#define SMS_SENT						true
+#define TIME_50_MS					50
+#define TIME_20_SEC					20000
+
 //private global variables
 static sysTimer_t sim800lTimer;
 
@@ -17,83 +24,63 @@ static bool SendSMS(char* phoneNumber, char* message);
 int main(void)
 {
 	//local variables
-	static char hc06ReceiveBuffer[HC06_RX_BUFFER_SIZE];
-	bool motionPrevDetected = false;
+	static char raspberryPiData;
+	static sysTimer_t audibleSpeakerTimer;
+	bool smsStatus = SMS_NOT_SENT;
+	bool audibleSpeakerActivated = false;
 
 	//Initializations
 	System_Init();
-	System_Alarm_Init(&sim800lTimer,50);
+	System_Alarm_Init(&sim800lTimer, TIME_50_MS);
+	System_Alarm_Init(&audibleSpeakerTimer, TIME_20_SEC);
+	SIM800L_Tx_Init();
+	Speaker_Init();
 	PIR_Init();
 	HC06_Tx_Init();
-	HC06_Rx_Init(hc06ReceiveBuffer);
-	Speaker_Init();
-	SIM800L_Tx_Init();
+	HC06_Rx_Init(&raspberryPiData);
 	
-	//HC06_Transmit("AT+ROLE?\r\n");
-	//System_Timer_DelayMs(50);
-//	HC06_Transmit("AT+IAC?\r\n");
-//	System_Timer_DelayMs(50);
-	//HC06_Transmit("AT+PAIR=c010,1,09f087,5\r\n");
-	//System_Timer_DelayMs(50);
-	//HC06_Transmit("AT+LINK=c010,b1,09f087\r\n");
-	//System_Timer_DelayMs(50);
-	
-//	HC06_Transmit("AT\r\n");
-//	System_Timer_DelayMs(50);
-//	HC06_Transmit("AT+CMODE=0\r\n");
-//	System_Timer_DelayMs(50);
-//	HC06_Transmit("AT+BIND=c010,b1,09f087\r\n");
-//	System_Timer_DelayMs(50);
-
 	while(1)
 	{
 		
-		//Test code for speaker
-//		Speaker_Activate(SPEAKER_FREQ_800HZ, SPEAKER_DUTY_CYCLE_65PERCENT);
-//		System_Timer_DelayMs(5000);
-//		Speaker_Deactivate();
-//		System_Timer_DelayMs(5000);
-		
-		//Test code for bluetooth
-//		if(HC06_Rx_Done_Receiving())
-//		{
-//			if(!strcmp(hc06ReceiveBuffer,"Baby"))
-//			{
-//				HC06_Transmit("Maybe I'm in love\n");
-//			}
-//			else if (!strcmp(hc06ReceiveBuffer,"TEL class"))
-//			{
-//				HC06_Transmit("It's not worth it\n");
-//			}
-//			else
-//			{
-//				HC06_Transmit("Do not break the bro code by simping\n");
-//			}
-//		}
-		
 		if (PIR_Motion_Detected())
 		{
-			if (!motionPrevDetected)
+			//Reset PIR sensor state
+			PIR_Restart();
+			//Trigger raspberry pi with bluetooth message 
+			HC06_Transmit("trigger"); 
+		}
+		
+		if (HC06_Rx_Done_Receiving())
+		{
+			//Checking for data from raspberry pi via bluetooth
+			switch (raspberryPiData)
 			{
-				PIR_Restart();
-				motionPrevDetected = true;
-				/*Add code to send bluetooth message to raspberry pi*/
+				case '1':
+					smsStatus = SendSMS(PHONE_NUMBER,"Person detected");
+					if (smsStatus == SMS_SENT)
+					{
+						Speaker_Activate(SPEAKER_FREQ_800HZ,SPEAKER_DUTY_CYCLE_65PERCENT);
+						audibleSpeakerActivated = true;
+						HC06_Rx_Restart(); //Reset HC06 module state
+					}
+					break;
+				
+				case '2':
+					smsStatus = SendSMS(PHONE_NUMBER,"Animal detected");
+					if (smsStatus == SMS_SENT)
+					{
+						HC06_Rx_Restart();
+					}
+					break;
 			}
 		}
 		
-		else
+		if (audibleSpeakerActivated)
 		{
-			if (motionPrevDetected)
+			if (System_Alarm_Ready(&audibleSpeakerTimer))
 			{
-				/*Add code to interprete bluetooth data to determine whether
-				SMS should be sent or not. [switch..case construct]*/
-				
-//				bool smsSent = SendSMS("+2348144086708","Go home");
-//				
-//				if (smsSent)
-//				{
-//					motionPrevDetected = false;
-//				}
+				Speaker_Deactivate();
+				audibleSpeakerActivated = false;
 			}
 		}
 		
