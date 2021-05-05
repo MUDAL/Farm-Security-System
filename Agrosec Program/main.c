@@ -9,14 +9,14 @@
 #include "speaker.h"
 
 //private defines
-#define PHONE_NUMBER				"+2348144086708"
-#define SMS_NOT_SENT				false
-#define SMS_SENT						true
-#define TIME_50_MS					50
-#define TIME_20_SEC					20000
-#define RPI_NO_DETECTION		'0'
-#define RPI_PERSON_DETECTED	'1'
-#define RPI_ANIMAL_DETECTED	'2'
+#define PHONE_NUMBER						"+2348144086708"
+#define SMS_NOT_SENT						false
+#define SMS_SENT								true
+#define TIME_50_MS							50
+#define TIME_20_SEC							20000
+#define RPI_NO_DETECTION				'0'
+#define RPI_PERSON_DETECTED			'1'
+#define RPI_ANIMAL_DETECTED			'2'
 
 //private global variables
 static sysTimer_t sim800lTimer;
@@ -31,7 +31,8 @@ int main(void)
 	char raspberryPiData = RPI_NO_DETECTION;
 	bool smsStatus = SMS_NOT_SENT;
 	bool audibleSpeakerActivated = false;
-
+	bool rpiDataReady = false;
+	
 	//Initializations
 	System_Init();
 	System_Alarm_Init(&sim800lTimer, TIME_50_MS);
@@ -42,15 +43,24 @@ int main(void)
 	HC06_Tx_Init();
 	HC06_Rx_Init(&raspberryPiData);
 	
+	//Wait for PIR sensor to detect first motion...
+	//and notify the raspberry pi via bluetooth message.
+	while(!PIR_Motion_Detected()){}
+	PIR_Restart();
+	HC06_Transmit("trigger"); 
+	
 	while(1)
 	{
-		
 		if (PIR_Motion_Detected())
 		{
 			//Reset PIR sensor state
 			PIR_Restart();
-			//Trigger raspberry pi with bluetooth message 
-			HC06_Transmit("trigger"); 
+			if (rpiDataReady)
+			{
+				//Trigger raspberry pi with bluetooth message 
+				HC06_Transmit("trigger"); 
+				rpiDataReady = false;
+			}
 		}
 		
 		if (HC06_Rx_Done_Receiving())
@@ -59,10 +69,12 @@ int main(void)
 			switch (raspberryPiData)
 			{
 				case RPI_NO_DETECTION:
+					rpiDataReady = true;
 					HC06_Rx_Restart(); //Reset HC06 module state
 					break;
 				
 				case RPI_PERSON_DETECTED:
+					rpiDataReady = true;
 					smsStatus = SendSMS(PHONE_NUMBER,"Person detected");
 					if (smsStatus == SMS_SENT)
 					{
@@ -73,6 +85,7 @@ int main(void)
 					break;
 				
 				case RPI_ANIMAL_DETECTED:
+					rpiDataReady = true;
 					smsStatus = SendSMS(PHONE_NUMBER,"Animal detected");
 					if (smsStatus == SMS_SENT)
 					{
@@ -90,7 +103,6 @@ int main(void)
 				audibleSpeakerActivated = false;
 			}
 		}
-		
 	}
 	
 }
@@ -149,8 +161,5 @@ bool SendSMS(char* phoneNumber, char* message)
 			}
 			break;
 	}
-	
 	return doneSendingSMS;
 }
-	
-
