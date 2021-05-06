@@ -28,10 +28,10 @@ int main(void)
 {
 	//local variables
 	static sysTimer_t audibleSpeakerTimer;
+	bool audibleSpeakerActivated = false;
 	char raspberryPiData = RPI_NO_DETECTION;
 	bool smsStatus = SMS_NOT_SENT;
-	bool audibleSpeakerActivated = false;
-	bool rpiDataReady = false;
+	bool motionPrevDetected = false;
 	
 	//Initializations
 	System_Init();
@@ -43,55 +43,45 @@ int main(void)
 	HC06_Tx_Init();
 	HC06_Rx_Init(&raspberryPiData);
 	
-	//Wait for PIR sensor to detect first motion...
-	//and notify the raspberry pi via bluetooth message.
-	while(!PIR_Motion_Detected()){}
-	PIR_Restart();
-	HC06_Transmit("trigger"); 
-	
 	while(1)
 	{
 		if (PIR_Motion_Detected())
 		{
-			//Reset PIR sensor state
-			PIR_Restart();
-			if (rpiDataReady)
-			{
-				//Trigger raspberry pi with bluetooth message 
-				HC06_Transmit("trigger"); 
-				rpiDataReady = false;
+			if (!motionPrevDetected)
+			{ 
+				HC06_Transmit("trigger"); //Trigger raspberry pi with bluetooth message
+				motionPrevDetected = true;
 			}
+			PIR_Restart(); //Reset PIR sensor state
 		}
 		
-		if (HC06_Rx_Done_Receiving())
+		else
 		{
-			//Checking for data from raspberry pi via bluetooth
-			switch (raspberryPiData)
+			if (motionPrevDetected)
 			{
-				case RPI_NO_DETECTION:
-					rpiDataReady = true;
-					HC06_Rx_Restart(); //Reset HC06 module state
-					break;
-				
-				case RPI_PERSON_DETECTED:
-					rpiDataReady = true;
-					smsStatus = SendSMS(PHONE_NUMBER,"Person detected");
-					if (smsStatus == SMS_SENT)
+				if (HC06_Rx_Done_Receiving())
+				{
+					switch(raspberryPiData)
 					{
-						Speaker_Activate(SPEAKER_FREQ_800HZ,SPEAKER_DUTY_CYCLE_65PERCENT);
-						audibleSpeakerActivated = true;
-						HC06_Rx_Restart(); 
+						case RPI_PERSON_DETECTED:
+						smsStatus = SendSMS(PHONE_NUMBER,"Person detected");
+						if (smsStatus == SMS_SENT)
+						{
+							Speaker_Activate(SPEAKER_FREQ_800HZ,SPEAKER_DUTY_CYCLE_65PERCENT);
+							audibleSpeakerActivated = true;
+							HC06_Rx_Restart(); 
+						}
+						break;
+					
+						case RPI_ANIMAL_DETECTED:
+							smsStatus = SendSMS(PHONE_NUMBER,"Animal detected");
+							if (smsStatus == SMS_SENT)
+							{
+								HC06_Rx_Restart();
+							}
+							break;
 					}
-					break;
-				
-				case RPI_ANIMAL_DETECTED:
-					rpiDataReady = true;
-					smsStatus = SendSMS(PHONE_NUMBER,"Animal detected");
-					if (smsStatus == SMS_SENT)
-					{
-						HC06_Rx_Restart();
-					}
-					break;
+				}
 			}
 		}
 		
@@ -101,6 +91,7 @@ int main(void)
 			{
 				Speaker_Deactivate();
 				audibleSpeakerActivated = false;
+				motionPrevDetected = false;
 			}
 		}
 	}
@@ -158,6 +149,8 @@ bool SendSMS(char* phoneNumber, char* message)
 				SIM800L_Transmit_Byte(0x1A); //send CTRL+Z to terminate command line
 				currentState = STATE_SEND_INIT_AT_CMD;
 				doneSendingSMS = true; 
+				memset(smsATCmd, '\0', 27);
+				strcpy(smsATCmd, "AT+CMGS=\"");
 			}
 			break;
 	}
