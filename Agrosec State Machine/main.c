@@ -66,7 +66,11 @@ int main(void)
 				
 			case STATE_CHECK_RPI_DATA:
 				
-					raspberryPiData = HC06_Receive_Char();
+					if (HC06_Receive_Char() != '\0')
+					{
+						raspberryPiData = HC06_Receive_Char();
+					}
+			
 					switch(raspberryPiData)
 					{
 						case RPI_PERSON_DETECTED:
