@@ -66,7 +66,6 @@ int main(void)
 				break;
 				
 			case STATE_CHECK_RPI_DATA:
-				
 				hc06RxChar = HC06_Receive_Char();
 		
 				if (hc06RxChar != '\0')
@@ -77,13 +76,13 @@ int main(void)
 				switch(raspberryPiData)
 				{
 					case RPI_PERSON_DETECTED:
-					smsStatus = SendSMS(PHONE_NUMBER,"Person detected");
-					if (smsStatus == SMS_SENT)
-					{
-						Speaker_Activate(SPEAKER_FREQ_1KHZ,SPEAKER_DUTY_CYCLE_65PERCENT);
-						state = STATE_SPEAKER_CONTROL;
-					}
-					break;
+						smsStatus = SendSMS(PHONE_NUMBER,"Person detected");
+						if (smsStatus == SMS_SENT)
+						{
+							Speaker_Activate(SPEAKER_FREQ_1KHZ,SPEAKER_DUTY_CYCLE_65PERCENT);
+							state = STATE_SPEAKER_CONTROL;
+						}
+						break;
 				
 					case RPI_ANIMAL_DETECTED:
 						smsStatus = SendSMS(PHONE_NUMBER,"Animal detected");
