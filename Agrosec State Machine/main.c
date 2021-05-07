@@ -79,6 +79,7 @@ int main(void)
 						{
 							Speaker_Activate(SPEAKER_FREQ_1KHZ,SPEAKER_DUTY_CYCLE_65PERCENT);
 							state = STATE_SPEAKER_CONTROL;
+							raspberryPiData = RPI_NO_DETECTION;
 						}
 						break;
 					
@@ -88,6 +89,7 @@ int main(void)
 							{
 								Speaker_Activate(SPEAKER_FREQ_15KHZ, SPEAKER_DUTY_CYCLE_65PERCENT);
 								state = STATE_SPEAKER_CONTROL;
+								raspberryPiData = RPI_NO_DETECTION;
 							}
 							break;
 					}
