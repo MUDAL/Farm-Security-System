@@ -36,6 +36,7 @@ int main(void)
 	//local variables
 	static sysTimer_t speakerTimer;
 	uint8_t state = STATE_DETECT_MOTION;
+	char hc06RxChar = RPI_NO_DETECTION;
 	char raspberryPiData = RPI_NO_DETECTION;
 	bool smsStatus = SMS_NOT_SENT;
 	
@@ -57,7 +58,7 @@ int main(void)
 				
 				if (PIR_Motion_Detected())
 				{
-					HC06_Transmit("trigger"); //Trigger raspberry pi with bluetooth message
+					HC06_Transmit("T"); //Trigger raspberry pi with bluetooth message
 					PIR_Restart(); //Reset PIR sensor state
 					state = STATE_CHECK_RPI_DATA;
 				}
@@ -66,31 +67,33 @@ int main(void)
 				
 			case STATE_CHECK_RPI_DATA:
 				
-					if (HC06_Receive_Char() != '\0')
+				hc06RxChar = HC06_Receive_Char();
+		
+				if (hc06RxChar != '\0')
+				{
+					raspberryPiData = hc06RxChar;
+				}
+				
+				switch(raspberryPiData)
+				{
+					case RPI_PERSON_DETECTED:
+					smsStatus = SendSMS(PHONE_NUMBER,"Person detected");
+					if (smsStatus == SMS_SENT)
 					{
-						raspberryPiData = HC06_Receive_Char();
+						Speaker_Activate(SPEAKER_FREQ_1KHZ,SPEAKER_DUTY_CYCLE_65PERCENT);
+						state = STATE_SPEAKER_CONTROL;
 					}
-			
-					switch(raspberryPiData)
-					{
-						case RPI_PERSON_DETECTED:
-						smsStatus = SendSMS(PHONE_NUMBER,"Person detected");
+					break;
+				
+					case RPI_ANIMAL_DETECTED:
+						smsStatus = SendSMS(PHONE_NUMBER,"Animal detected");
 						if (smsStatus == SMS_SENT)
 						{
-							Speaker_Activate(SPEAKER_FREQ_1KHZ,SPEAKER_DUTY_CYCLE_65PERCENT);
+							Speaker_Activate(SPEAKER_FREQ_15KHZ, SPEAKER_DUTY_CYCLE_65PERCENT);
 							state = STATE_SPEAKER_CONTROL;
 						}
 						break;
-					
-						case RPI_ANIMAL_DETECTED:
-							smsStatus = SendSMS(PHONE_NUMBER,"Animal detected");
-							if (smsStatus == SMS_SENT)
-							{
-								Speaker_Activate(SPEAKER_FREQ_15KHZ, SPEAKER_DUTY_CYCLE_65PERCENT);
-								state = STATE_SPEAKER_CONTROL;
-							}
-							break;
-					}
+				}
 					
 				break;
 			
