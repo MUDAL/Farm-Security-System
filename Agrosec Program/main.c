@@ -27,8 +27,8 @@ static bool SendSMS(char* phoneNumber, char* message);
 int main(void)
 {
 	//local variables
-	static sysTimer_t audibleSpeakerTimer;
-	bool audibleSpeakerActivated = false;
+	static sysTimer_t speakerTimer;
+	bool speakerActivated = false;
 	char raspberryPiData = RPI_NO_DETECTION;
 	bool smsStatus = SMS_NOT_SENT;
 	bool motionPrevDetected = false;
@@ -36,7 +36,7 @@ int main(void)
 	//Initializations
 	System_Init();
 	System_Alarm_Init(&sim800lTimer, TIME_50_MS);
-	System_Alarm_Init(&audibleSpeakerTimer, TIME_20_SEC);
+	System_Alarm_Init(&speakerTimer, TIME_20_SEC);
 	SIM800L_Tx_Init();
 	Speaker_Init();
 	PIR_Init();
@@ -49,7 +49,7 @@ int main(void)
 		{
 			if (!motionPrevDetected)
 			{ 
-				HC06_Transmit("trigger"); //Trigger raspberry pi with bluetooth message
+				HC06_Transmit("s"); //Trigger raspberry pi with bluetooth message
 				motionPrevDetected = true;
 			}
 			PIR_Restart(); //Reset PIR sensor state
@@ -68,7 +68,7 @@ int main(void)
 						if (smsStatus == SMS_SENT)
 						{
 							Speaker_Activate(SPEAKER_FREQ_800HZ,SPEAKER_DUTY_CYCLE_65PERCENT);
-							audibleSpeakerActivated = true;
+							speakerActivated = true;
 							HC06_Rx_Restart(); 
 						}
 						break;
@@ -77,6 +77,8 @@ int main(void)
 							smsStatus = SendSMS(PHONE_NUMBER,"Animal detected");
 							if (smsStatus == SMS_SENT)
 							{
+								Speaker_Activate(SPEAKER_FREQ_15KHZ, SPEAKER_DUTY_CYCLE_65PERCENT);
+								speakerActivated = true;
 								HC06_Rx_Restart();
 							}
 							break;
@@ -85,12 +87,12 @@ int main(void)
 			}
 		}
 		
-		if (audibleSpeakerActivated)
+		if (speakerActivated)
 		{
-			if (System_Alarm_Ready(&audibleSpeakerTimer))
+			if (System_Alarm_Ready(&speakerTimer))
 			{
 				Speaker_Deactivate();
-				audibleSpeakerActivated = false;
+				speakerActivated = false;
 				motionPrevDetected = false;
 			}
 		}
