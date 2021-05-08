@@ -153,10 +153,6 @@ void USART_Transmit_String_With_Null(USART_TypeDef* uartPort, char* pString)
 
 char USART_Rx_Char(USART_TypeDef* uartPort)
 {
-	char rxChar = '\0';
-	if( (USART1->SR & USART_SR_RXNE) == USART_SR_RXNE )
-	{
-		rxChar = uartPort->DR;
-	}
-	return rxChar;
+	while ( (USART1->SR & USART_SR_RXNE) != USART_SR_RXNE );
+	return uartPort->DR;
 }

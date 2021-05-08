@@ -21,9 +21,9 @@
 //private enum
 enum States
 {
-	STATE_DETECT_MOTION = 0,
-	STATE_CHECK_RPI_DATA,
-	STATE_SPEAKER_CONTROL
+	STATE1 = 0,
+	STATE2,
+	STATE3
 };
 
 //private global variables
@@ -36,11 +36,11 @@ int main(void)
 {
 	//local variables
 	static sysTimer_t speakerTimer;
-	uint8_t state = STATE_DETECT_MOTION;
-	char hc06RxChar = RPI_NO_DETECTION;
+	uint8_t state = STATE1;
 	char raspberryPiData = RPI_NO_DETECTION;
 	bool smsStatus = SMS_NOT_SENT;
 	bool prevPirState = false;
+	bool rpiDataReceived = false;
 	
 	//Initializations
 	System_Init();
@@ -56,14 +56,14 @@ int main(void)
 	{		
 		switch(state)
 		{
-			case STATE_DETECT_MOTION:
+			case STATE1:
 				if (PIR_Logic_Level())
 				{
 					if (!prevPirState)
 					{
 						HC06_Transmit("T"); //Trigger raspberry pi with bluetooth message
 						prevPirState = true;
-						state = STATE_CHECK_RPI_DATA;
+						state = STATE2;
 					}
 				}
 				
@@ -76,12 +76,11 @@ int main(void)
 				}
 				break;
 				
-			case STATE_CHECK_RPI_DATA:
-				hc06RxChar = HC06_Receive_Char();
-		
-				if (hc06RxChar != '\0')
+			case STATE2:
+				if (!rpiDataReceived)
 				{
-					raspberryPiData = hc06RxChar;
+					raspberryPiData = HC06_Receive_Char();
+					rpiDataReceived = true;
 				}
 				
 				switch(raspberryPiData)
@@ -91,7 +90,7 @@ int main(void)
 						if (smsStatus == SMS_SENT)
 						{
 							Speaker_Activate(SPEAKER_FREQ_1KHZ,SPEAKER_DUTY_CYCLE_65PERCENT);
-							state = STATE_SPEAKER_CONTROL;
+							state = STATE3;
 						}
 						break;
 				
@@ -100,18 +99,19 @@ int main(void)
 						if (smsStatus == SMS_SENT)
 						{
 							Speaker_Activate(SPEAKER_FREQ_15KHZ, SPEAKER_DUTY_CYCLE_65PERCENT);
-							state = STATE_SPEAKER_CONTROL;
+							state = STATE3;
 						}
 						break;
 				}
 				break;
 			
-			case STATE_SPEAKER_CONTROL:
+			case STATE3:
 				if (System_Alarm_Ready(&speakerTimer))
 				{
 					Speaker_Deactivate();
+					rpiDataReceived = false;
 					raspberryPiData = RPI_NO_DETECTION;
-					state = STATE_DETECT_MOTION;
+					state = STATE1;
 				}
 				break;
 		}
