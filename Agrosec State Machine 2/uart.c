@@ -1,8 +1,5 @@
 #include "stm32f10x.h"                  // Device header
-#include <stdbool.h>
 #include "uart.h"
-
-static volatile bool uart1DataReceived;
 
 void USART_Init(USART_TypeDef* uartPort,
 								uint16_t baud,
