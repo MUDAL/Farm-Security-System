@@ -54,9 +54,13 @@ void HC06_Transmit(char* pData)
 }
 
 
-char HC06_Receive_Char(void)
+char HC06_Receive_Char_Blocking(void)
 {
-	return USART_Rx_Char(USART1);
+	return USART_Rx_Char_Blocking(USART1);
 }
 
+char HC06_Receive_Char_NonBlocking(void)
+{
+	return USART_Rx_Char_NonBlocking(USART1);
+}
 

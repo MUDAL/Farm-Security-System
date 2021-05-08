@@ -9,14 +9,16 @@
 #include "speaker.h"
 
 //private defines
-#define PHONE_NUMBER						"+2348144086708"
-#define SMS_NOT_SENT						false
-#define SMS_SENT								true
-#define TIME_50_MS							50
-#define TIME_20_SEC							20000
-#define RPI_NO_DETECTION				'0'
-#define RPI_PERSON_DETECTED			'1'
-#define RPI_ANIMAL_DETECTED			'2'
+#define PHONE_NUMBER									"+2348144086708"
+#define SMS_NOT_SENT									false
+#define SMS_SENT											true
+#define TIME_50_MS										50
+#define TIME_20_SEC										20000
+#define RPI_NO_DETECTION							'0'
+#define RPI_PERSON_DETECTED						'1'
+#define RPI_ANIMAL_DETECTED						'2'
+
+#define HC06_NONBLOCKING			true
 
 //private enum
 enum States
@@ -61,7 +63,7 @@ int main(void)
 				{
 					if (!prevPirState)
 					{
-						HC06_Transmit("T"); //Trigger raspberry pi with bluetooth message
+						HC06_Transmit("t"); //Trigger raspberry pi with bluetooth message
 						prevPirState = true;
 						state = STATE2;
 					}
@@ -79,8 +81,18 @@ int main(void)
 			case STATE2:
 				if (!rpiDataReceived)
 				{
-					raspberryPiData = HC06_Receive_Char();
+					#if HC06_NONBLOCKING
+					char hc06RxData = HC06_Receive_Char_NonBlocking();
+					if (hc06RxData != '\0')
+					{
+						raspberryPiData = hc06RxData;
+						rpiDataReceived = true;
+					}
+					
+					#else
+					raspberryPiData = HC06_Receive_Char_Blocking();
 					rpiDataReceived = true;
+					#endif
 				}
 				
 				switch(raspberryPiData)

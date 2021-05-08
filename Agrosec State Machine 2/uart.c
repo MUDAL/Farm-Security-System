@@ -1,5 +1,8 @@
 #include "stm32f10x.h"                  // Device header
+#include <stdbool.h>
 #include "uart.h"
+
+static volatile bool uart1DataReceived;
 
 void USART_Init(USART_TypeDef* uartPort,
 								uint16_t baud,
@@ -151,8 +154,22 @@ void USART_Transmit_String_With_Null(USART_TypeDef* uartPort, char* pString)
 	
 }
 
-char USART_Rx_Char(USART_TypeDef* uartPort)
+char USART_Rx_Char_Blocking(USART_TypeDef* uartPort)
 {
-	while ( (USART1->SR & USART_SR_RXNE) != USART_SR_RXNE );
+	while ( (uartPort->SR & USART_SR_RXNE) != USART_SR_RXNE );
 	return uartPort->DR;
 }
+
+char USART_Rx_Char_NonBlocking(USART_TypeDef* uartPort)
+{
+	char uartData = '\0';
+	
+	if ( (uartPort->SR & USART_SR_RXNE) == USART_SR_RXNE )
+	{
+		uartData = uartPort->DR;
+	}
+	return uartData;
+}
+
+
+

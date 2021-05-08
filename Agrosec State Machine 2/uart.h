@@ -23,6 +23,7 @@ extern void USART_Transmit_Byte(USART_TypeDef* uartPort, char byte);
 extern void USART_Transmit_String(USART_TypeDef* uartPort, char* pString);
 //Transmits multibyte serial data (including NULL) through a configured USART peripheral
 extern void USART_Transmit_String_With_Null(USART_TypeDef* uartPort, char* pString);
-extern char USART_Rx_Char(USART_TypeDef* uartPort);
+extern char USART_Rx_Char_Blocking(USART_TypeDef* uartPort);
+extern char USART_Rx_Char_NonBlocking(USART_TypeDef* uartPort);
 
 #endif //_UART_H
