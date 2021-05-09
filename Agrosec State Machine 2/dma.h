@@ -30,19 +30,4 @@ extern void DMA_USART_Rx_Init(DMA_Channel_TypeDef* dmaChannel,
 															uint32_t bufferSize, 
 															uint32_t dmaConfig);
 
-/*Enables Configured DMA channel to receive incoming data
-to a peripheral. Returns 'true' if the DMA has started receiving data. 															
-*/															
-extern bool DMA_Rx_Is_Receiving(DMA_TypeDef* dmaPort, 
-																DMA_Channel_TypeDef* dmaChannel,
-																uint32_t dmaClearInterruptFlag,
-																uint32_t numberOfBytesToReceive);
-
-extern void DMA_Rx_Restart(DMA_TypeDef* dmaPort, 
-													 DMA_Channel_TypeDef* dmaChannel,
-													 uint32_t dmaClearInterruptFlag);
-
-extern bool DMA_Rx_InterruptReady(DMA_TypeDef* dmaPort, uint8_t channelNumber);
-extern void DMA_Rx_Clear_Interrupt(DMA_TypeDef* dmaPort, uint8_t channelNumber);
-
 #endif //_DMA_H

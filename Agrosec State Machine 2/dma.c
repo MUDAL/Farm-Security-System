@@ -4,15 +4,6 @@
 #include "systick.h"
 #include "dma.h"
 
-//Generic DMA Channel enable
-#define  DMA_CCR_EN		((uint16_t)0x0001)
-
-#define NO_OF_DMA1_CHANNELS					7
-#define NO_OF_DMA2_CHANNELS					5
-
-static volatile bool dma1Channel[ NO_OF_DMA1_CHANNELS ];
-static volatile bool dma2Channel[ NO_OF_DMA2_CHANNELS ];
-
 void DMA_USART_Rx_Init(DMA_Channel_TypeDef* dmaChannel,
 											 USART_TypeDef* uartPort,
 											 char* uartRxBuffer, 
@@ -76,89 +67,3 @@ void DMA_USART_Rx_Init(DMA_Channel_TypeDef* dmaChannel,
 	dmaChannel->CCR |= dmaConfig;
 }
 
-bool DMA_Rx_Is_Receiving(DMA_TypeDef* dmaPort, 
-												 DMA_Channel_TypeDef* dmaChannel,
-								         uint32_t dmaClearInterruptFlag,
-								         uint32_t numberOfBytesToReceive)
-
-{
-
-	bool dmaActive = false;
-	
-	dmaPort->IFCR |= dmaClearInterruptFlag;
-	dmaChannel->CNDTR = numberOfBytesToReceive;
-	dmaChannel->CCR |= DMA_CCR_EN; 
-	
-	if (dmaChannel->CNDTR != numberOfBytesToReceive)
-	{ 
-		dmaActive = true;
-	}
-	
-	return dmaActive;
-}
-
-void DMA_Rx_Restart(DMA_TypeDef* dmaPort, 
-										DMA_Channel_TypeDef* dmaChannel,
-								    uint32_t dmaClearInterruptFlag)
-{
-	dmaChannel->CCR &= ~DMA_CCR_EN;
-	dmaPort->IFCR |= dmaClearInterruptFlag;
-	dmaChannel->CNDTR = 0;
-}
-
-bool DMA_Rx_InterruptReady(DMA_TypeDef* dmaPort, uint8_t channelNumber)
-{
-	if (dmaPort == DMA1)
-	{
-		return dma1Channel[channelNumber - 1];
-	}
-	
-	else
-	{
-		if (channelNumber > DMA_CHANNEL5)
-		{ //DMA2 doesn't have channels 6 and 7
-			return false;
-		}
-		else
-		{
-			return dma2Channel[channelNumber - 1];
-		}
-	}
-}
-
-void DMA_Rx_Clear_Interrupt(DMA_TypeDef* dmaPort, uint8_t channelNumber)
-{
-	if (dmaPort == DMA1)
-	{
-		dma1Channel[channelNumber - 1] = false;
-	}
-	
-	else
-	{
-		if (channelNumber > DMA_CHANNEL5)
-		{ //DMA2 doesn't have channels 6 and 7
-			return;
-		}
-		else
-		{
-			dma2Channel[channelNumber - 1] = false;
-		}
-	}
-	
-}
-
-void DMA1_Channel3_IRQHandler(void)
-{
-	DMA1->IFCR |= DMA_IFCR_CTCIF3;
-}
-
-void DMA1_Channel5_IRQHandler(void)
-{
-	DMA1->IFCR |= DMA_IFCR_CTCIF5;
-	dma1Channel[DMA_CHANNEL5 - 1] = true;
-}
-
-void DMA1_Channel6_IRQHandler(void)
-{
-	DMA1->IFCR |= DMA_IFCR_CTCIF6;
-}
