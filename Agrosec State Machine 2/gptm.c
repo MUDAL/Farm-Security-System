@@ -44,10 +44,10 @@ void GPTM_Control(TIM_TypeDef* timerPort, bool timerEn)
 	}
 	else
 	{
-		timerPort->CCMR1 &= ~( TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 ); //enable PWM1
-		timerPort->CCMR1 &= ~TIM_CCMR1_OC1PE; //enable preload register
-		timerPort->CR1 &= ~TIM_CR1_ARPE; //Buffer the auto-reload register
-		timerPort->CCER &= ~TIM_CCER_CC1E; //enable output capture
+		timerPort->CCMR1 &= ~( TIM_CCMR1_OC1M_1 | TIM_CCMR1_OC1M_2 ); //disable PWM1
+		timerPort->CCMR1 &= ~TIM_CCMR1_OC1PE; //disable preload register
+		timerPort->CR1 &= ~TIM_CR1_ARPE; 
+		timerPort->CCER &= ~TIM_CCER_CC1E; //disable output capture
 		timerPort->CR1 &= ~TIM_CR1_CEN;
 	}
 }	
